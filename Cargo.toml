@@ -1,0 +1,12 @@
+[package]
+name = "mime-sniffer"
+version = "0.1.0"
+authors = ["Flier Lu <flier.lu@gmail.com>"]
+description = "Detecting mime types base on content sniffer."
+homepage = "https://github.com/flier/rust-mime-sniffer"
+repository = "https://github.com/flier/rust-mime-sniffer.git"
+documentation = "https://docs.rs/mime-sniffer"
+keywords = ["mime", "sniffer"]
+license = "Apache-2.0"
+
+[dependencies]
