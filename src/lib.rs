@@ -119,17 +119,19 @@
 //! ```
 //!
 //! ```rust
-//! use mime_sniffer::{MimeTypeSniffer, HttpRequest};
+//! use mime_sniffer::{HttpRequest, MimeTypeSniffer};
 //!
 //! let req = HttpRequest {
 //!     content: b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
-//!     url: "http://localhost/notes.ppt",
-//!     type_hint: "plain/text",
+//!     url: &"http://localhost/notes.ppt",
+//!     type_hint: "text/plain",
 //! };
 //!
 //! assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
 //! ```
+extern crate url;
+
 mod magic;
 mod api;
 
-pub use api::{HttpRequest, MimeTypeSniffer};
+pub use api::{HttpRequest, MimeTypeSniffer, MimeTypeSniffable};

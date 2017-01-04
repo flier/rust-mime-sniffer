@@ -129,12 +129,7 @@ const EXTRA_MAGIC_NUMBERS: &'static [Magic] =
       Magic::Number("image/x-phaseone-raw", b"MMMMRaw"),
       Magic::Number("image/x-x3f", b"FOVb")];
 
-pub fn sniff_mime_type<'a, T: AsRef<[u8]>>(content: &'a T,
-                                           url: &'a str,
-                                           type_hint: &'a str)
-                                           -> Option<&'a str> {
-    let buf = content.as_ref();
-
+pub fn sniff_mime_type<'a>(buf: &'a [u8], url: &'a str, type_hint: &'a str) -> Option<&'a str> {
     // By default, we assume we have enough content.
     // Each sniff routine may unset this if it wasn't provided enough content.
     let mut have_enough_content = true;
@@ -240,9 +235,7 @@ pub fn sniff_mime_type<'a, T: AsRef<[u8]>>(content: &'a T,
     }
 }
 
-pub fn sniff_mime_type_from_local_data<'a, T: AsRef<[u8]>>(content: &'a T) -> Option<&str> {
-    let buf = content.as_ref();
-
+pub fn sniff_mime_type_from_local_data<'a>(buf: &'a [u8]) -> Option<&str> {
     // First check the extra table.
     EXTRA_MAGIC_NUMBERS.iter()
         .find(|magic| magic.matches(buf))

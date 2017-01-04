@@ -36,14 +36,21 @@ assert_eq!(Some("application/pdf"), b"%PDF-1.5".sniff_mime_type());
 ## Examples
 
 ```rust
-use mime_sniffer::{MimeTypeSniffer, HttpRequest};
+extern crate url;
+extern crate mime_sniffer;
 
+use url::Url;
+
+use mime_sniffer::{HttpRequest, MimeTypeSniffer, MimeTypeSniffable};
+
+let url = Url::parse("http://localhost/notes.ppt").unwrap();
 let req = HttpRequest {
     content: b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
-    url: "http://localhost/notes.ppt",
-    type_hint: "plain/text",
+    url: &url,
+    type_hint: "text/plain",
 };
 
+assert!(req.should_sniff_mime_type());
 assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
 ```
 
