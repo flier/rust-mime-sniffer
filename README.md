@@ -2,7 +2,7 @@
 
 Detecting mime types base on content sniffer.
 
-[Document](https://flier.github.io/rust-mime-sniffer/docs/v0.1.0/mime_sniffer/index.html)
+[Document](https://docs.rs/mime-sniffer/)
 
 ***The detection workflow was copied from [Chromium](https://src.chromium.org/viewvc/chrome/trunk/src/net/base/mime_sniffer.cc)***
 
