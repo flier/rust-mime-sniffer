@@ -1,6 +1,8 @@
 use magic::{sniff_mime_type, sniff_mime_type_from_local_data};
 
+/// Extension methods for MIME type sniffer
 pub trait MimeTypeSniffer {
+    /// sniff content for MIME type
     fn sniff_mime_type(&self) -> Option<&str>;
 }
 
@@ -10,6 +12,7 @@ impl<T: AsRef<[u8]>> MimeTypeSniffer for T {
     }
 }
 
+/// HTTP request with content, URL and MIME type hint.
 pub struct HttpRequest<'a, T: 'a + AsRef<[u8]>> {
     pub content: &'a T,
     pub url: &'a str,
@@ -35,7 +38,7 @@ mod tests {
     fn test_request_sniffer() {
         let req = HttpRequest {
             content: b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
-            url: "http://node.ppt",
+            url: "http://localhost/notes.ppt",
             type_hint: "plain/text",
         };
 
