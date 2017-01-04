@@ -2,9 +2,11 @@
 
 Detecting mime types base on content sniffer.
 
+[Document](https://flier.github.io/rust-mime-sniffer/docs/v0.1.0/mime_sniffer/index.html)
+
 ***The detection workflow was copied from [Chromium](https://src.chromium.org/viewvc/chrome/trunk/src/net/base/mime_sniffer.cc)***
 
-[Document](https://flier.github.io/rust-mime-sniffer/docs/v0.1.0/mime_sniffer/index.html)
+For more detail, please read [How Mozilla determines MIME Types](https://developer.mozilla.org/en-US/docs/Mozilla/How_Mozilla_determines_MIME_Types).
 
 ## Usage
 
@@ -44,3 +46,9 @@ let req = HttpRequest {
 
 assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
 ```
+
+## Related
+
+* To recognize binary file type, you may need [libmagic](https://linux.die.net/man/3/libmagic) with rust binding [rust-magic](https://github.com/robo9k/rust-magic) crate. [![crate](https://img.shields.io/crates/v/magic.svg)](https://crates.io/crates/magic)
+* To guess MIME type by file extension, you may need [mime_guess](https://github.com/abonander/mime_guess) crate. [![crate](https://img.shields.io/crates/v/mime_guess.svg)](https://crates.io/crates/mime_guess)
+* To manage MIME type as strong types, you may need [mime.rs](https://github.com/hyperium/mime.rs) crate. [![crate](https://img.shields.io/crates/v/mime.svg)](https://crates.io/crates/mime)
