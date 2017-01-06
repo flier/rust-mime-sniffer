@@ -119,19 +119,31 @@
 //! ```
 //!
 //! ```rust
-//! use mime_sniffer::{HttpRequest, MimeTypeSniffer};
+//! extern crate mime;
+//! extern crate mime_sniffer;
 //!
-//! let req = HttpRequest {
-//!     content: b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
-//!     url: &"http://localhost/notes.ppt",
-//!     type_hint: "text/plain",
-//! };
+//! use mime::{TopLevel, SubLevel, Mime};
+//! use mime_sniffer::{HttpRequest, MimeTypeSniffer, MimeTypeSnifferExt};
 //!
-//! assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
+//! fn main() {
+//!     let req = HttpRequest {
+//!         content: b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
+//!         url: &"http://localhost/notes.ppt",
+//!         type_hint: "text/plain",
+//!     };
+//!
+//!     assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
+//!     assert_eq!(Mime(TopLevel::Application,
+//!                     SubLevel::Ext(String::from("vnd.ms-powerpoint")),
+//!                     []),
+//!                req.sniff_mime_type_ext().unwrap());
+//! }
 //! ```
 extern crate url;
+#[macro_use]
+extern crate mime;
 
 mod magic;
 mod api;
 
-pub use api::{HttpRequest, MimeTypeSniffer, MimeTypeSniffable};
+pub use api::{HttpRequest, MimeTypeSniffer, MimeTypeSnifferExt, MimeTypeSniffable};

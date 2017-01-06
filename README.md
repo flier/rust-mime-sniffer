@@ -37,11 +37,12 @@ assert_eq!(Some("application/pdf"), b"%PDF-1.5".sniff_mime_type());
 
 ```rust
 extern crate url;
+extern crate mime;
 extern crate mime_sniffer;
 
 use url::Url;
 
-use mime_sniffer::{HttpRequest, MimeTypeSniffer, MimeTypeSniffable};
+use mime_sniffer::{HttpRequest, MimeTypeSniffer, MimeTypeSniffable, MimeTypeSnifferExt};
 
 let url = Url::parse("http://localhost/notes.ppt").unwrap();
 let req = HttpRequest {
@@ -52,6 +53,10 @@ let req = HttpRequest {
 
 assert!(req.should_sniff_mime_type());
 assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
+assert_eq!(Mime(TopLevel::Application,
+                SubLevel::Ext(String::from("vnd.ms-powerpoint")),
+                []),
+           req.sniff_mime_type_ext().unwrap());
 ```
 
 ## Related

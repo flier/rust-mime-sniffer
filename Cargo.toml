@@ -1,6 +1,6 @@
 [package]
 name = "mime-sniffer"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Flier Lu <flier.lu@gmail.com>"]
 description = "Detecting mime types base on content sniffer."
 homepage = "https://github.com/flier/rust-mime-sniffer"
@@ -11,3 +11,4 @@ license = "Apache-2.0"
 
 [dependencies]
 url = "^1.2"
+mime = "^0.2"

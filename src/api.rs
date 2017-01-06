@@ -1,4 +1,5 @@
 use url::Url;
+use mime::Mime;
 
 use magic::{sniff_mime_type, sniff_mime_type_from_local_data, is_unknown_mime_type};
 
@@ -7,6 +8,16 @@ pub trait MimeTypeSniffer {
     /// sniff content for MIME type
     fn sniff_mime_type(&self) -> Option<&str>;
 }
+
+/// Extension methods for MIME type sniffer
+pub trait MimeTypeSnifferExt: MimeTypeSniffer {
+    /// sniff content for MIME type
+    fn sniff_mime_type_ext(&self) -> Option<Mime> {
+        self.sniff_mime_type().and_then(|mime_type| mime_type.parse().ok())
+    }
+}
+
+impl<T: MimeTypeSniffer> MimeTypeSnifferExt for T {}
 
 /// Should we sniff content for MIME type
 pub trait MimeTypeSniffable {
@@ -81,6 +92,7 @@ impl<'a, T: 'a + AsRef<[u8]>> MimeTypeSniffable for HttpRequest<'a, T, Url> {
 #[cfg(test)]
 mod tests {
     use url::Url;
+    use mime::{TopLevel, SubLevel, Mime};
 
     use super::*;
 
@@ -100,5 +112,9 @@ mod tests {
 
         assert!(req.should_sniff_mime_type());
         assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
+        assert_eq!(Mime(TopLevel::Application,
+                        SubLevel::Ext(String::from("vnd.ms-powerpoint")),
+                        []),
+                   req.sniff_mime_type_ext().unwrap());
     }
 }
