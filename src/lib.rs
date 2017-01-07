@@ -119,10 +119,10 @@
 //! ```
 //!
 //! ```rust
+//! #[macro_use]
 //! extern crate mime;
 //! extern crate mime_sniffer;
 //!
-//! use mime::{TopLevel, SubLevel, Mime};
 //! use mime_sniffer::{HttpRequest, MimeTypeSniffer, MimeTypeSnifferExt};
 //!
 //! fn main() {
@@ -133,9 +133,7 @@
 //!     };
 //!
 //!     assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
-//!     assert_eq!(Mime(TopLevel::Application,
-//!                     SubLevel::Ext(String::from("vnd.ms-powerpoint")),
-//!                     []),
+//!     assert_eq!(mime!(Application/("vnd.ms-powerpoint")),
 //!                req.sniff_mime_type_ext().unwrap());
 //! }
 //! ```

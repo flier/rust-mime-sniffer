@@ -92,7 +92,6 @@ impl<'a, T: 'a + AsRef<[u8]>> MimeTypeSniffable for HttpRequest<'a, T, Url> {
 #[cfg(test)]
 mod tests {
     use url::Url;
-    use mime::{TopLevel, SubLevel, Mime};
 
     use super::*;
 
@@ -112,9 +111,7 @@ mod tests {
 
         assert!(req.should_sniff_mime_type());
         assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
-        assert_eq!(Mime(TopLevel::Application,
-                        SubLevel::Ext(String::from("vnd.ms-powerpoint")),
-                        []),
+        assert_eq!(mime!(Application / ("vnd.ms-powerpoint")),
                    req.sniff_mime_type_ext().unwrap());
     }
 }
