@@ -11,4 +11,4 @@ license = "Apache-2.0"
 
 [dependencies]
 url = "^1.2"
-mime = "^0.2"
+mime = ">=0.2, <0.4"
