@@ -1,7 +1,7 @@
 use url::Url;
 use mime::Mime;
 
-use magic::{sniff_mime_type, sniff_mime_type_from_local_data, is_unknown_mime_type};
+use magic::{is_unknown_mime_type, sniff_mime_type, sniff_mime_type_from_local_data};
 
 /// Extension methods for MIME type sniffer
 pub trait MimeTypeSniffer {
@@ -13,7 +13,8 @@ pub trait MimeTypeSniffer {
 pub trait MimeTypeSnifferExt: MimeTypeSniffer {
     /// sniff content for MIME type
     fn sniff_mime_type_ext(&self) -> Option<Mime> {
-        self.sniff_mime_type().and_then(|mime_type| mime_type.parse().ok())
+        self.sniff_mime_type()
+            .and_then(|mime_type| mime_type.parse().ok())
     }
 }
 
@@ -50,39 +51,42 @@ impl<'a, T: 'a + AsRef<[u8]>, U: 'a + AsRef<str>> MimeTypeSniffer for HttpReques
     }
 }
 
-const SNIFFABLE_TYPES: &'static [&'static str] =
-    &[// Many web servers are misconfigured to send text/plain for many
-      // different types of content.
-      "text/plain",
-      // We want to sniff application/octet-stream for
-      // application/x-chrome-extension, but nothing else.
-      "application/octet-stream",
-      // XHTML and Atom/RSS feeds are often served as plain xml instead of
-      // their more specific mime types.
-      "text/xml",
-      "application/xml",
-      // Check for false Microsoft Office MIME types.
-      "application/msword",
-      "application/vnd.ms-excel",
-      "application/vnd.ms-powerpoint",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      "application/vnd.ms-excel.sheet.macroenabled.12",
-      "application/vnd.ms-word.document.macroenabled.12",
-      "application/vnd.ms-powerpoint.presentation.macroenabled.12",
-      "application/mspowerpoint",
-      "application/msexcel",
-      "application/vnd.ms-word",
-      "application/vnd.ms-word.document.12",
-      "application/vnd.msword"];
+const SNIFFABLE_TYPES: &'static [&'static str] = &[
+    // Many web servers are misconfigured to send text/plain for many
+    // different types of content.
+    "text/plain",
+    // We want to sniff application/octet-stream for
+    // application/x-chrome-extension, but nothing else.
+    "application/octet-stream",
+    // XHTML and Atom/RSS feeds are often served as plain xml instead of
+    // their more specific mime types.
+    "text/xml",
+    "application/xml",
+    // Check for false Microsoft Office MIME types.
+    "application/msword",
+    "application/vnd.ms-excel",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-excel.sheet.macroenabled.12",
+    "application/vnd.ms-word.document.macroenabled.12",
+    "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+    "application/mspowerpoint",
+    "application/msexcel",
+    "application/vnd.ms-word",
+    "application/vnd.ms-word.document.12",
+    "application/vnd.msword",
+];
 
 impl<'a, T: 'a + AsRef<[u8]>> MimeTypeSniffable for HttpRequest<'a, T, Url> {
     fn should_sniff_mime_type(&self) -> bool {
         match self.url.scheme() {
             "" | "http" | "https" | "ftp" | "content" | "file" => {
-                SNIFFABLE_TYPES.iter().any(|&mime_type| mime_type == self.type_hint) ||
-                is_unknown_mime_type(self.type_hint)
+                SNIFFABLE_TYPES
+                    .iter()
+                    .any(|&mime_type| mime_type == self.type_hint)
+                    || is_unknown_mime_type(self.type_hint)
             }
             _ => false,
         }
@@ -97,7 +101,7 @@ mod tests {
 
     #[test]
     fn test_mime_type_sniffer() {
-        assert_eq!(Some("application/pdf"), b"%PDF-1.5".sniff_mime_type());
+        assert_eq!(b"%PDF-1.5".sniff_mime_type(), Some("application/pdf"));
     }
 
     #[test]
@@ -110,8 +114,10 @@ mod tests {
         };
 
         assert!(req.should_sniff_mime_type());
-        assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
-        assert_eq!(mime!(Application / ("vnd.ms-powerpoint")),
-                   req.sniff_mime_type_ext().unwrap());
+        assert_eq!(req.sniff_mime_type(), Some("application/vnd.ms-powerpoint"));
+        assert_eq!(
+            req.sniff_mime_type_ext().unwrap(),
+            "application/vnd.ms-powerpoint".parse::<Mime>().unwrap()
+        );
     }
 }

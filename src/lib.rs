@@ -132,16 +132,14 @@
 //!         type_hint: "text/plain",
 //!     };
 //!
-//!     assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
-//!     assert_eq!(mime!(Application/("vnd.ms-powerpoint")),
-//!                req.sniff_mime_type_ext().unwrap());
+//!     assert_eq!(req.sniff_mime_type(), Some("application/vnd.ms-powerpoint"));
+//!     assert_eq!(req.sniff_mime_type_ext().unwrap().type_(), mime::APPLICATION);
 //! }
 //! ```
-extern crate url;
-#[macro_use]
 extern crate mime;
+extern crate url;
 
 mod magic;
 mod api;
 
-pub use api::{HttpRequest, MimeTypeSniffer, MimeTypeSnifferExt, MimeTypeSniffable};
+pub use api::{HttpRequest, MimeTypeSniffable, MimeTypeSniffer, MimeTypeSnifferExt};
