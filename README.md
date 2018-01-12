@@ -53,9 +53,8 @@ let req = HttpRequest {
 };
 
 assert!(req.should_sniff_mime_type());
-assert_eq!(Some("application/vnd.ms-powerpoint"), req.sniff_mime_type());
-assert_eq!(mime!(Application/("vnd.ms-powerpoint")),
-           req.sniff_mime_type_ext().unwrap());
+assert_eq!(req.sniff_mime_type(), Some("application/vnd.ms-powerpoint"));
+assert_eq!(req.sniff_mime_type_ext().unwrap().type_(), mime::APPLICATION);
 ```
 
 ## Related
