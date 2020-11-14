@@ -14,7 +14,7 @@ To use `mime-sniffer`, first add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mime_sniffer = "^0.1"
+mime-sniffer = "^0.1"
 ```
 
 Then, add this to your crate root:
