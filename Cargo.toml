@@ -10,5 +10,5 @@ keywords = ["mime", "sniffer"]
 license = "Apache-2.0"
 
 [dependencies]
-url = "^1.2"
+url = "^2.5"
 mime = "^0.3"
