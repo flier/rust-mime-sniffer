@@ -1,4 +1,4 @@
-## mime-sniffer [![ci](https://github.com/flier/rust-mime-sniffer/actions/workflows/co.yml/badge.svg?event=push)](https://github.com/flier/rust-mime-sniffer/actions/workflows/ci.yml) [![crate](https://img.shields.io/crates/v/mime_sniffer.svg)](https://crates.io/crates/mime_sniffer)
+## mime-sniffer [![ci](https://github.com/flier/rust-mime-sniffer/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/flier/rust-mime-sniffer/actions/workflows/ci.yml) [![crate](https://img.shields.io/crates/v/mime_sniffer.svg)](https://crates.io/crates/mime_sniffer)
 
 Detecting mime types base on content sniffer.
 
