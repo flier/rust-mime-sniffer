@@ -1,7 +1,7 @@
-use url::Url;
 use mime::Mime;
+use url::Url;
 
-use magic::{is_unknown_mime_type, sniff_mime_type, sniff_mime_type_from_local_data};
+use crate::magic::{is_unknown_mime_type, sniff_mime_type, sniff_mime_type_from_local_data};
 
 /// Extension methods for MIME type sniffer
 pub trait MimeTypeSniffer {
@@ -51,7 +51,7 @@ impl<'a, T: 'a + AsRef<[u8]>, U: 'a + AsRef<str>> MimeTypeSniffer for HttpReques
     }
 }
 
-const SNIFFABLE_TYPES: &'static [&'static str] = &[
+const SNIFFABLE_TYPES: &[&str] = &[
     // Many web servers are misconfigured to send text/plain for many
     // different types of content.
     "text/plain",

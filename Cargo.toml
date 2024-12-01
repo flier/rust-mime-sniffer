@@ -8,6 +8,7 @@ repository = "https://github.com/flier/rust-mime-sniffer.git"
 documentation = "https://docs.rs/mime-sniffer"
 keywords = ["mime", "sniffer"]
 license = "Apache-2.0"
+edition = "2021"
 
 [dependencies]
 url = "^2.5"

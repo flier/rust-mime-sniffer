@@ -15,7 +15,7 @@ impl Magic {
 
     pub fn matches(&self, content: &[u8]) -> bool {
         match *self {
-            Magic::Number(_, ref magic) if content.len() >= magic.len() => {
+            Magic::Number(_, magic) if content.len() >= magic.len() => {
                 // Compare content header to a magic number where magic_entry can contain '.'
                 // for single character of anything, allowing some bytes to be skipped.
                 magic
@@ -36,7 +36,7 @@ impl Magic {
                     )
                     .all(|(&m, c)| m == b'.' || m == c)
             }
-            Magic::String(_, ref magic) if content.len() >= magic.len() => magic
+            Magic::String(_, magic) if content.len() >= magic.len() => magic
                 .as_bytes()
                 .eq_ignore_ascii_case(&content[..magic.len()]),
             _ => false,
@@ -44,7 +44,7 @@ impl Magic {
     }
 }
 
-const MAGIC_NUMBERS: &'static [Magic] = &[
+const MAGIC_NUMBERS: &[Magic] = &[
     // Source: HTML 5 specification
     Magic::Number("application/pdf", b"%PDF-"),
     Magic::Number("application/postscript", b"%!PS-Adobe-"),
@@ -78,24 +78,24 @@ const MAGIC_NUMBERS: &'static [Magic] = &[
     Magic::Number("application/x-rar-compressed", b"Rar!\x1A\x07\x00"),
     Magic::Number("application/x-msmetafile", b"\xD7\xCD\xC6\x9A"),
     Magic::Number("application/octet-stream", b"MZ"),
-      // Sniffing for Flash
-      //
-      // Including these magic number for Flash is a trade off.
-      //
-      // Pros:
-      //   * Flash is an important and popular file format
-      //
-      // Cons:
-      //   * These patterns are fairly weak
-      //   * If we mistakenly decide something is Flash, we will execute it
-      //     in the origin of an unsuspecting site.  This could be a security
-      //     vulnerability if the site allows users to upload content.
-      //
-      // On balance, we do not include these patterns.
-      //
-      // Magic::Number("application/x-shockwave-flash", b"CWS"),
-      // Magic::Number("application/x-shockwave-flash", b"FLV"),
-      // Magic::Number("application/x-shockwave-flash", b"FWS"),
+    // Sniffing for Flash
+    //
+    // Including these magic number for Flash is a trade off.
+    //
+    // Pros:
+    //   * Flash is an important and popular file format
+    //
+    // Cons:
+    //   * These patterns are fairly weak
+    //   * If we mistakenly decide something is Flash, we will execute it
+    //     in the origin of an unsuspecting site.  This could be a security
+    //     vulnerability if the site allows users to upload content.
+    //
+    // On balance, we do not include these patterns.
+    //
+    // Magic::Number("application/x-shockwave-flash", b"CWS"),
+    // Magic::Number("application/x-shockwave-flash", b"FLV"),
+    // Magic::Number("application/x-shockwave-flash", b"FWS"),
 ];
 
 // The number of content bytes we need to use all our magic numbers.  Feel free
@@ -106,7 +106,7 @@ const MAX_BYTES_TO_SNIFF_HTML: usize = 512;
 const MAX_BYTES_TO_SNIFF_BIN: usize = 512;
 const MAX_BYTES_TO_SNIFF_XML: usize = 300;
 
-const EXTRA_MAGIC_NUMBERS: &'static [Magic] = &[
+const EXTRA_MAGIC_NUMBERS: &[Magic] = &[
     Magic::Number("image/x-xbitmap", b"#define"),
     Magic::Number("image/x-icon", b"\x00\x00\x01\x00"),
     Magic::Number("image/svg+xml", b"<?xml_version="),
@@ -243,7 +243,7 @@ pub fn sniff_mime_type<'a>(buf: &'a [u8], url: &'a str, type_hint: &'a str) -> O
     }
 }
 
-pub fn sniff_mime_type_from_local_data<'a>(buf: &'a [u8]) -> Option<&str> {
+pub fn sniff_mime_type_from_local_data(buf: &[u8]) -> Option<&str> {
     // First check the extra table.
     EXTRA_MAGIC_NUMBERS
         .iter()
@@ -258,14 +258,13 @@ pub fn sniff_mime_type_from_local_data<'a>(buf: &'a [u8]) -> Option<&str> {
         })
 }
 
-const UNKNOWN_MIME_TYPES: &'static [&'static str] =
-    &["", "unknown/unknown", "application/unknown", "*/*"];
+const UNKNOWN_MIME_TYPES: &[&str] = &["", "unknown/unknown", "application/unknown", "*/*"];
 
 pub fn is_unknown_mime_type(type_hint: &str) -> bool {
     UNKNOWN_MIME_TYPES
         .iter()
         .any(|&mime_type| mime_type == type_hint)
-        || type_hint.bytes().find(|&c| c == b'/').is_none()
+        || !type_hint.bytes().any(|c| c == b'/')
 }
 
 // Truncates |content size| to |max_size| and returns true if |content size| is at least |max_size|.
@@ -281,35 +280,35 @@ pub fn truncate_size(content: &[u8], max_size: usize) -> (&[u8], bool) {
 // decide that a document that begins "<!DOCTYPE SOAP-ENV:Envelope PUBLIC " is
 // HTML, but we will not.
 macro_rules! html_tag {
-    ($tag:expr) => (Magic::String("text/html", concat!("<", $tag)))
+    ($tag:expr) => {
+        Magic::String("text/html", concat!("<", $tag))
+    };
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-const SNIFFABLE_TAGS: &'static [Magic] = &[
+const SNIFFABLE_TAGS: &[Magic] = &[
     // XML processing directive.  Although this is not an HTML mime type, we sniff
-   // for this in the HTML phase because text/xml is just as powerful as HTML and
-   // we want to leverage our white space skipping technology.
-   Magic::Number("text/xml", b"<?xml"), // Mozilla
-   // DOCTYPEs
-   html_tag!("!DOCTYPE html"), // HTML5 spec
-   // Sniffable tags, ordered by how often they occur in sniffable documents.
-   html_tag!("script"), // HTML5 spec, Mozilla
-   html_tag!("html"), // HTML5 spec, Mozilla
-   html_tag!("!--"),
-   html_tag!("head"), // HTML5 spec, Mozilla
-   html_tag!("iframe"), // Mozilla
-   html_tag!("h1"), // Mozilla
-
-   html_tag!("div"), // Mozilla
-   html_tag!("font"), // Mozilla
-   html_tag!("table"), // Mozilla
-   html_tag!("a"), // Mozilla
-   html_tag!("style"), // Mozilla
-   html_tag!("title"), // Mozilla
-   html_tag!("b"), // Mozilla
-   html_tag!("body"), // Mozilla
-   html_tag!("br"),
-   html_tag!("p") /* Mozilla */
+    // for this in the HTML phase because text/xml is just as powerful as HTML and
+    // we want to leverage our white space skipping technology.
+    Magic::Number("text/xml", b"<?xml"), // Mozilla
+    // DOCTYPEs
+    html_tag!("!DOCTYPE html"), // HTML5 spec
+    // Sniffable tags, ordered by how often they occur in sniffable documents.
+    html_tag!("script"), // HTML5 spec, Mozilla
+    html_tag!("html"),   // HTML5 spec, Mozilla
+    html_tag!("!--"),
+    html_tag!("head"),   // HTML5 spec, Mozilla
+    html_tag!("iframe"), // Mozilla
+    html_tag!("h1"),     // Mozilla
+    html_tag!("div"),    // Mozilla
+    html_tag!("font"),   // Mozilla
+    html_tag!("table"),  // Mozilla
+    html_tag!("a"),      // Mozilla
+    html_tag!("style"),  // Mozilla
+    html_tag!("title"),  // Mozilla
+    html_tag!("b"),      // Mozilla
+    html_tag!("body"),   // Mozilla
+    html_tag!("br"),
+    html_tag!("p"), /* Mozilla */
 ];
 
 // Returns true and sets result if the content appears to be HTML.
@@ -337,7 +336,7 @@ pub fn sniff_for_html(content: &[u8]) -> (Option<&str>, bool) {
     )
 }
 
-const BYTE_ORDER_MARKS: &'static [Magic] = &[
+const BYTE_ORDER_MARKS: &[Magic] = &[
     // UTF-16BE
     Magic::Number("text/plain", b"\xFE\xFF"),
     // UTF-16LE
@@ -348,25 +347,24 @@ const BYTE_ORDER_MARKS: &'static [Magic] = &[
 
 // Whether a given byte looks like it might be part of binary content.
 // Source: HTML5 spec
-#[cfg_attr(rustfmt, rustfmt_skip)]
-const BYTE_LOOKS_BINARY: &'static [u8] = &[
-   1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1,  // 0x00 - 0x0F
-   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,  // 0x10 - 0x1F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x20 - 0x2F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x30 - 0x3F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x40 - 0x4F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x50 - 0x5F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x60 - 0x6F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x70 - 0x7F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x80 - 0x8F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0x90 - 0x9F
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xA0 - 0xAF
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xB0 - 0xBF
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xC0 - 0xCF
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xD0 - 0xDF
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xE0 - 0xEF
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 0xF0 - 0xFF
- ];
+const BYTE_LOOKS_BINARY: &[u8] = &[
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, // 0x00 - 0x0F
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, // 0x10 - 0x1F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x20 - 0x2F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x30 - 0x3F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x40 - 0x4F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x50 - 0x5F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x60 - 0x6F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x70 - 0x7F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x80 - 0x8F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x90 - 0x9F
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xA0 - 0xAF
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xB0 - 0xBF
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xC0 - 0xCF
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xD0 - 0xDF
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xE0 - 0xEF
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0xF0 - 0xFF
+];
 
 // Returns true and sets result to "application/octet-stream" if the content
 // appears to be binary data. Otherwise, returns false and sets "text/plain".
@@ -399,10 +397,10 @@ pub fn sniff_binary(content: &[u8]) -> (Option<&str>, bool) {
     )
 }
 
-const XML_TAG: &'static [u8] = b"<?xml";
-const DOCTYPE_TAG: &'static [u8] = b"<!DOCTYPE";
+const XML_TAG: &[u8] = b"<?xml";
+const DOCTYPE_TAG: &[u8] = b"<!DOCTYPE";
 
-const MAGIC_XML: &'static [Magic] = &[
+const MAGIC_XML: &[Magic] = &[
     Magic::String(
         "application/xhtml+xml",
         "<html xmlns=\"http://www.w3.\
@@ -461,7 +459,7 @@ pub enum OfficeDocType {
     PowerPoint,
 }
 
-const OFFICE_EXTENSION_TYPES: &'static [(OfficeDocType, &'static str)] = &[
+const OFFICE_EXTENSION_TYPES: &[(OfficeDocType, &str)] = &[
     (OfficeDocType::Word, ".doc"),
     (OfficeDocType::Excel, ".xls"),
     (OfficeDocType::PowerPoint, ".ppt"),
@@ -473,29 +471,29 @@ const OFFICE_EXTENSION_TYPES: &'static [(OfficeDocType, &'static str)] = &[
 // The number of content bytes we need to use all our Microsoft Office magic numbers.
 const BYTES_REQUIRED_FOR_OFFICE_MAGIC: usize = 8;
 
-const OFFICE_MAGIC_NUMBERS: &'static [Magic] = &[
-    Magic::Number("CFB", b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"),
+const OFFICE_MAGIC_NUMBERS: &[Magic] = &[
+    Magic::Number("CFB", b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"), // DevSkim: ignore DS187371
     Magic::Number("OOXML", b"PK\x03\x04"),
 ];
 
 pub fn is_office_mime_type(type_hint: &str) -> bool {
-    match type_hint {
+    matches!(
+        type_hint,
         "application/msword"
-        | "application/vnd.ms-excel"
-        | "application/vnd.ms-powerpoint"
-        | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        | "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        | "application/vnd.ms-excel.sheet.macroenabled.12"
-        | "application/vnd.ms-word.document.macroenabled.12"
-        | "application/vnd.ms-powerpoint.presentation.macroenabled.12"
-        | "application/mspowerpoint"
-        | "application/msexcel"
-        | "application/vnd.ms-word"
-        | "application/vnd.ms-word.document.12"
-        | "application/vnd.msword" => true,
-        _ => false,
-    }
+            | "application/vnd.ms-excel"
+            | "application/vnd.ms-powerpoint"
+            | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            | "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            | "application/vnd.ms-excel.sheet.macroenabled.12"
+            | "application/vnd.ms-word.document.macroenabled.12"
+            | "application/vnd.ms-powerpoint.presentation.macroenabled.12"
+            | "application/mspowerpoint"
+            | "application/msexcel"
+            | "application/vnd.ms-word"
+            | "application/vnd.ms-word.document.12"
+            | "application/vnd.msword"
+    )
 }
 
 // This function checks for files that have a Microsoft Office MIME type
@@ -535,12 +533,12 @@ pub fn sniff_for_office_docs<'a>(content: &[u8], url: &'a str) -> (Option<&'a st
             .and_then(|magic| {
                 OFFICE_EXTENSION_TYPES
                     .iter()
-                    .filter(|&&(_, ref file_ext)| file_ext.len() <= url.len())
-                    .find(|&&(_, ref file_ext)| {
+                    .filter(|&(_, file_ext)| file_ext.len() <= url.len())
+                    .find(|&(_, file_ext)| {
                         file_ext.eq_ignore_ascii_case(&url[url.len() - file_ext.len()..])
                     })
-                    .and_then(|&(ref doc_type, _)| match magic.mime_type() {
-                        "CFB" => match *doc_type {
+                    .and_then(|(doc_type, _)| match magic.mime_type() {
+                        "CFB" /* DevSkim: ignore DS187371 */ => match *doc_type {
                             OfficeDocType::Word => Some("application/msword"),
                             OfficeDocType::Excel => Some("application/vnd.ms-excel"),
                             OfficeDocType::PowerPoint => Some("application/vnd.ms-powerpoint"),

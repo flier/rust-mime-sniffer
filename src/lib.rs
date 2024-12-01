@@ -23,7 +23,7 @@
 //! * IE 7: Render as HTML
 //! * Firefox 2: Render as text
 //! * Safari 3: Render as text
-//! (Note: Safari will Render as HTML if the URL has an HTML extension)
+//!   (Note: Safari will Render as HTML if the URL has an HTML extension)
 //! * Opera 9: Render as text
 //!
 //! Here we choose to follow the majority (and break some compatibility with IE).
@@ -55,7 +55,7 @@
 //! * IE 7: Render as GIF
 //! * Firefox 2: Render as GIF
 //! * Safari 3: Download as Unknown
-//! (Note: Safari will Render as GIF if the URL has an GIF extension)
+//!   (Note: Safari will Render as GIF if the URL has an GIF extension)
 //! * Opera 9: Render as GIF
 //!
 //! The choice is clear.
@@ -139,7 +139,7 @@
 extern crate mime;
 extern crate url;
 
-mod magic;
 mod api;
+mod magic;
 
 pub use api::{HttpRequest, MimeTypeSniffable, MimeTypeSniffer, MimeTypeSnifferExt};
