@@ -95,8 +95,6 @@ impl<'a, T: 'a + AsRef<[u8]>> MimeTypeSniffable for HttpRequest<'a, T, Url> {
 
 #[cfg(test)]
 mod tests {
-    use url::Url;
-
     use super::*;
 
     #[test]
