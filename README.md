@@ -4,7 +4,7 @@ Detecting mime types base on content sniffer.
 
 [Document](https://docs.rs/mime-sniffer/)
 
-***The detection workflow was copied from [Chromium](https://src.chromium.org/viewvc/chrome/trunk/src/net/base/mime_sniffer.cc)***
+***The detection workflow was copied from [Chromium](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/base/mime_sniffer.cc)***
 
 For more detail, please read [How Mozilla determines MIME Types](https://developer.mozilla.org/en-US/docs/Mozilla/How_Mozilla_determines_MIME_Types).
 
